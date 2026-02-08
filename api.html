@@ -1,11 +1,12 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes</title>
+  <title>Study Notes</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
@@ -13,6 +14,29 @@
   <div class="max-w-6xl mx-auto p-6">
     <h1 class="text-3xl font-black mb-6">Study Notes</h1>
 
+    <!-- search -->
+
+<div class="mb-6 w-full">
+  <form class="flex w-full gap-2" onsubmit="searchNotes(event)">
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Search notes…"
+      class="flex-1 min-w-0 w-full border border-gray-300 rounded-lg px-4 py-3
+             focus:outline-none focus:ring-2 focus:ring-black"
+    />
+    <button
+      type="submit"
+      class="shrink-0 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800"
+    >
+      Search
+    </button>
+  </form>
+</div>
+
+
+
+<!-- notes -->
     <div id="notes" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
     <div class="flex justify-center gap-3 mt-8" id="pagination"></div>
@@ -20,28 +44,62 @@
 
 <script>
 const API = "https://study.wtec1.com/api/notes";
+let searchQuery = "";
 
 async function loadNotes(page = 1) {
-  const res = await fetch(`${API}?page=${page}`);
+  const url = searchQuery
+    ? `${API}?page=${page}&search=${encodeURIComponent(searchQuery)}`
+    : `${API}?page=${page}`;
+
+  const res = await fetch(url);
   const data = await res.json();
-  renderNotes(data.notes);
-  renderPagination(data.totalPages, page);
+
+  renderNotes(data.notes || []);
+  renderPagination(data.totalPages || 1, page);
 }
+
+window.searchNotes = function (e) {
+  e.preventDefault();
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+
+  searchQuery = input.value.trim();
+  loadNotes(1);
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadNotes();
+});
+
 
 function renderNotes(notes) {
   const box = document.getElementById("notes");
   box.innerHTML = "";
 
+  if (!notes.length) {
+    box.innerHTML =
+      `<p class="col-span-full text-center text-gray-500">
+        No notes found
+       </p>`;
+    return;
+  }
+
   notes.forEach(n => {
+    const action =
+      n.access_type === "free"
+        ? `<a href="https://study.wtec1.com/view/${n.id}" target="_blank"
+             class="text-green-600 font-semibold block mb-1">
+             Open PDF
+           </a>`
+        : `<a href="https://study.wtec1.com/pay-wait/${n.id}" target="_blank"
+             class="text-red-600 font-semibold block mb-1">
+             Buy & Open (MK700)
+           </a>`;
+
     box.innerHTML += `
       <div class="bg-white p-5 rounded-xl shadow">
         <h3 class="font-bold text-lg mb-3">${n.subject_name}</h3>
-
-        <a href="https://study.wtec1.com${n.pdf_url}" target="_blank"
-           class="text-blue-600 font-semibold block mb-1">
-          Open PDF
-        </a>
-
+        ${action}
         <span class="${
           n.access_type === "free"
             ? "text-green-600"
@@ -58,24 +116,35 @@ function renderPagination(total, current) {
   const p = document.getElementById("pagination");
   p.innerHTML = "";
 
-  for (let i = 1; i <= total; i++) {
-    p.innerHTML += `
-      <button onclick="loadNotes(${i})"
-        class="px-4 py-2 rounded ${
-          i === current ? "bg-black text-white" : "bg-white border"
-        }">
-        ${i}
-      </button>
-    `;
+  if (total <= 1) return;
+
+  const windowSize = 3;
+
+  let start = Math.max(1, current - 1);
+  let end = Math.min(total, start + windowSize - 1);
+
+  for (let i = start; i <= end; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className =
+      "px-4 py-2 rounded " +
+      (i === current ? "bg-black text-white" : "bg-white border");
+
+    btn.onclick = () => loadNotes(i);
+    p.appendChild(btn);
   }
 }
+
+document
+  .getElementById("searchInput")
+  ?.addEventListener("keydown", e => {
+    if (e.key === "Enter") searchNotes();
+  });
 
 document.addEventListener("DOMContentLoaded", () => {
   loadNotes();
 });
 </script>
-
-
 
 </body>
 </html>

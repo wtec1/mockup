@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Past Papers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="max-w-6xl mx-auto p-6">
+  <h1 class="text-3xl font-black mb-6">Past Papers</h1>
+
+  <!-- Search -->
+  <div class="mb-6 w-full">
+    <form class="flex w-full gap-2" onsubmit="searchPapers(event)">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search past papers…"
+        class="flex-1 min-w-0 w-full border border-gray-300 rounded-lg px-4 py-3
+               focus:outline-none focus:ring-2 focus:ring-black"
+      />
+      <button
+        type="submit"
+        class="shrink-0 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800"
+      >
+        Search
+      </button>
+    </form>
+  </div>
+
+  <!-- Papers -->
+  <div id="papers" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+  <div class="flex justify-center gap-3 mt-8" id="pagination"></div>
+</div>
+
+<script>
+const API = "https://study.wtec1.com/api/pastpapers";
+let searchQuery = "";
+
+async function loadPapers(page = 1) {
+  const url = searchQuery
+    ? `${API}?page=${page}&search=${encodeURIComponent(searchQuery)}`
+    : `${API}?page=${page}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  renderPapers(data.papers || []);
+  renderPagination(data.totalPages || 1, page);
+}
+
+function searchPapers(e) {
+  e.preventDefault();
+  searchQuery = document.getElementById("searchInput").value.trim();
+  loadPapers(1);
+}
+
+function renderPapers(papers) {
+  const box = document.getElementById("papers");
+  box.innerHTML = "";
+
+  papers.forEach(p => {
+    const action =
+      p.access_type === "free"
+        ? `<a href="https://study.wtec1.com/paper/${p.id}" target="_blank"
+             class="text-green-600 font-semibold block mb-1">
+             Open Paper
+           </a>`
+        : `<a href="https://study.wtec1.com/pay-wait-paper/${p.id}" target="_blank"
+             class="text-red-600 font-semibold block mb-1">
+             Buy & Open (MK700)
+           </a>`;
+
+    box.innerHTML += `
+      <div class="bg-white p-5 rounded-xl shadow">
+        <h3 class="font-bold text-lg mb-3">${p.subject_name}</h3>
+
+        ${action}
+
+        <span class="${
+          p.access_type === "free"
+            ? "text-green-600"
+            : "text-red-500"
+        } font-semibold text-sm">
+          ${p.access_type === "free" ? "Free" : "Premium"}
+        </span>
+      </div>
+    `;
+  });
+}
+
+function renderPagination(total, current) {
+  const p = document.getElementById("pagination");
+  p.innerHTML = "";
+  if (total <= 1) return;
+
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className =
+      "px-4 py-2 rounded " +
+      (i === current ? "bg-black text-white" : "bg-white border");
+
+    btn.onclick = () => loadPapers(i);
+    p.appendChild(btn);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadPapers();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+
+
+
+CREATE TABLE single_purchases (
+  id SERIAL PRIMARY KEY,
+  note_id INTEGER NOT NULL,
+  payment_ref TEXT UNIQUE NOT NULL,
+  paid BOOLEAN DEFAULT FALSE,
+  paid_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+What it does
+
+note_id → which material
+
+payment_ref → PayChangu reference
+
+paid → unlock flag
+
+paid_at → payment time
+
+Usage
+
+On PayChangu success → set paid = true
+
+/unlock/:note_id?ref=XXXX → verify from this table
+
+Done.
+
+
+table for papers
+
+CREATE TABLE paper_purchases (
+  id SERIAL PRIMARY KEY,
+  paper_id INT NOT NULL,
+  payment_ref TEXT NOT NULL,
+  paid BOOLEAN DEFAULT false,
+  paychangu_ref TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  paid_at TIMESTAMP
+);
+
+
