@@ -43,3 +43,26 @@ CREATE TABLE paper_purchases (
 );
 
 
+
+-- unified purchases table
+CREATE TABLE transactions (
+  id SERIAL PRIMARY KEY,
+
+  -- what was bought
+  item_type VARCHAR(20) NOT NULL CHECK (item_type IN ('note','paper')),
+  item_id INTEGER NOT NULL,
+
+  -- payment
+  payment_ref VARCHAR(100) NOT NULL UNIQUE,
+  paychangu_ref VARCHAR(100),
+
+  paid BOOLEAN DEFAULT FALSE,
+  paid_at TIMESTAMP,
+
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- fast lookups during polling & unlock
+CREATE INDEX idx_transactions_ref ON transactions(payment_ref);
+CREATE INDEX idx_transactions_item ON transactions(item_type, item_id);
+

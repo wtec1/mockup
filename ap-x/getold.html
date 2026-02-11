@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduVault - Premium Learning Materials</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="icon" type="image/png" href="/img/WTEC1_LMS_512x512.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+        
+        .glow-accent {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+        }
+        
+        .book-card {
+            position: relative;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .book-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.2);
+        }
+        
+        .book-cover {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        
+        .book-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .book-card:hover .book-cover::before {
+            left: 100%;
+        }
+        
+        .price-tag {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #fbbf24;
+            border: 2px solid #fbbf24;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(251, 191, 36, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    <div class="glow-accent" style="top: -200px; right: -200px;"></div>
+    <div class="glow-accent" style="bottom: -200px; left: -200px;"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 py-6 px-8 border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-slate-900 font-bold text-xl">
+                    EV
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-amber-400">EduVault</h1>
+                    <p class="text-xs text-slate-400">Premium Learning Materials</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="./notes.html" class="text-slate-300 hover:text-amber-400 transition">Books</a>
+                <a href="./papers.html" class="text-slate-300 hover:text-amber-400 transition">papers</a>
+                <a href="https://ac.wtec1.com/eduvault/" class="text-slate-300 hover:text-amber-400 transition" target="_blank">About</a>
+                <a href="https://ac.wtec1.com/edu-contact/" class="text-slate-300 hover:text-amber-400 transition" target="_blank">Contact</a>
+            </nav>
+            <div class="flex gap-4">
+               <a href="https://study.wtec1.com/" target="_blank"> <button class="btn-secondary">Subscribe</button></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 py-24 px-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="fade-in">
+                <span class="badge mb-6">🎓 Unlock Your Potential</span>
+            </div>
+           <h2 class="fade-in delay-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-6 leading-snug sm:leading-tight">
+            Premium Books &amp;<br class="hidden sm:block" />
+            <span class="text-amber-400">Learning Materials</span>
+            </h2>
+
+            <p class="fade-in delay-2 text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+                School resources. Purchase once, download immediately, learn forever.
+            </p>
+            <div class="fade-in delay-3 flex gap-4 justify-center">
+                <a href="./notes.html"><button class="btn-primary">Browse Books</button></a>
+                <a href="./papers.html"><button class="btn-secondary">Past Papers</button></a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="fade-in delay-4 grid grid-cols-3 gap-8 mt-20 max-w-3xl mx-auto">
+                <div>
+                    <div class="stat-number">2400+</div>
+                    <p class="text-slate-400 font-medium">Materials Available</p>
+                </div>
+                <div>
+                    <div class="stat-number">15K+</div>
+                    <p class="text-slate-400 font-medium">Active Learners</p>
+                </div>
+                <div>
+                    <div class="stat-number">98%</div>
+                    <p class="text-slate-400 font-medium">Satisfaction Rate</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Books -->
+   <section class="relative z-10 py-12 px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="flex justify-between items-end mb-12">
+      <div>
+        <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
+          Featured Materials
+        </h3>
+        <p class="text-sm sm:text-base md:text-lg text-slate-400">
+          Our best trending resources
+        </p>
+      </div>
+
+      <a href="./notes.html" class="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-2">
+        View
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <!-- Card 1 - Languages -->
+      <div class="book-card rounded-2xl overflow-hidden">
+        <div
+          class="book-cover relative aspect-[3/4] bg-cover bg-center"
+          style="background-image:url('https://ac.wtec1.com/wp-content/uploads/2026/02/Languages.jpg');"
+        >
+          <div class="absolute inset-0 bg-black/60"></div>
+          <div class="relative z-10 flex items-center justify-center h-full">
+            <div class="text-center p-8">
+              <h4 class="text-xl font-bold text-slate-200">Languages</h4>
+              <p class="text-sm text-slate-400 mt-2">Study Pack</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h4 class="font-bold text-lg mb-1">Grammar and Literature</h4>
+              <p class="text-sm text-slate-400">Secondary & College</p>
+            </div>
+            <span class="badge text-xs">PDF</span>
+          </div>
+
+          <p class="text-slate-300 text-sm mb-4">
+            Comprehensive grammar, composition, and communication skills with practice exercises.
+          </p>
+
+          <div class="flex justify-between items-center">
+            <span class="price-tag">MK 700</span>
+            <button class="btn-secondary text-sm py-2 px-4">Buy Me</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 - Sciences -->
+      <div class="book-card rounded-2xl overflow-hidden">
+        <div
+          class="book-cover relative aspect-[3/4] bg-cover bg-center"
+          style="background-image:url('https://ac.wtec1.com/wp-content/uploads/2026/02/Sciences.jpg');"
+        >
+          <div class="absolute inset-0 bg-black/60"></div>
+          <div class="relative z-10 flex items-center justify-center h-full">
+            <div class="text-center p-8">
+              <h4 class="text-xl font-bold text-slate-200">Sciences</h4>
+              <p class="text-sm text-slate-400 mt-2">Study Pack</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h4 class="font-bold text-lg mb-1">Master the Sciences</h4>
+             <p class="text-sm text-slate-400">Secondary & College</p>
+            </div>
+            <span class="badge text-xs">PDF</span>
+          </div>
+
+          <p class="text-slate-300 text-sm mb-4">
+            Complete notes with diagrams, formulas, worked examples and exam preparation materials.
+          </p>
+
+          <div class="flex justify-between items-center">
+            <span class="price-tag">MK 700</span>
+            <button class="btn-secondary text-sm py-2 px-4">Buy Me</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 - Humanities -->
+      <div class="book-card rounded-2xl overflow-hidden">
+        <div
+          class="book-cover relative aspect-[3/4] bg-cover bg-center"
+          style="background-image:url('https://ac.wtec1.com/wp-content/uploads/2026/02/Humanities.jpg');"
+        >
+          <div class="absolute inset-0 bg-black/60"></div>
+          <div class="relative z-10 flex items-center justify-center h-full">
+            <div class="text-center p-8">
+              <h4 class="text-xl font-bold text-slate-200">Humanities</h4>
+              <p class="text-sm text-slate-400 mt-2">Study Pack</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h4 class="font-bold text-lg mb-1">History & Social Studies</h4>
+              <p class="text-sm text-slate-400">Secondary Level</p>
+            </div>
+            <span class="badge text-xs">PDF</span>
+          </div>
+
+          <p class="text-slate-300 text-sm mb-4">
+            In-depth study guides with clear and key concepts, and simplified content.
+          </p>
+
+          <div class="flex justify-between items-center">
+            <span class="price-tag">MK 700</span>
+            <button class="btn-secondary text-sm py-2 px-4">Buy Me</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+    <!-- Features -->
+    <section class="relative z-10 py-20 px-8">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-4xl font-bold text-center mb-16">Why Choose EduVault?</h3>
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-4">
+                        <span>⚡</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Instant Download</h4>
+                    <p class="text-slate-400 text-sm">Access your materials immediately after purchase</p>
+                </div>
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-4">
+                        <span>🔒</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Secure Payment</h4>
+                    <p class="text-slate-400 text-sm">256-bit encryption for all transactions</p>
+                </div>
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-4">
+                        <span>♾️</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Lifetime Access</h4>
+                    <p class="text-slate-400 text-sm">Download anytime, learn at your own pace</p>
+                </div>
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-4">
+                        <span>✓</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Quality Guaranteed</h4>
+                    <p class="text-slate-400 text-sm">Expert-reviewed, professionally formatted</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="relative z-10 py-20 px-8">
+        <div class="max-w-4xl mx-auto text-center book-card rounded-3xl p-12">
+           <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
+            Ready to Start Learning?
+            </h3>
+
+            <p class="text-slate-300 text-lg mb-8">Join thousands of learners accessing online classes</p>
+           <a href="https://ac.wtec1.xyz" target="_blank"><button class="btn-primary">Join Classes Now</button></a> 
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-slate-700/50 py-12 px-8 mt-20">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
+            <div>
+                <h5 class="font-bold mb-4 text-amber-400">EduVault</h5>
+                <p class="text-slate-400 text-sm">Premium learning materials for ambitious learners worldwide.</p>
+            </div>
+            <div>
+                <h6 class="font-semibold mb-4">Platform</h6>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="./notes.html" class="hover:text-amber-400 transition">Browse Catalogue</a></li>
+                    <li><a href="./papers.html" class="hover:text-amber-400 transition">Papers</a></li>
+                     <li><a href="https://ac.wtec1.com/eduvault/" class="hover:text-amber-400 transition">About Us</a></li>
+
+                </ul>
+            </div>
+            <div>
+                <h6 class="font-semibold mb-4">Support</h6>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="https://ac.wtec1.com/edu-contact/" class="hover:text-amber-400 transition" target="_blank">Help Center</a></li>
+                    <li><a href="https://chat.whatsapp.com/FbfNnodPQR78tLtxNpWdsN" class="hover:text-amber-400 transition" target="_blank">Join WhatsApp</a></li>
+                    <li><a href="https://web.facebook.com/millenniumelearning/" class="hover:text-amber-400 transition" target="_blank">Facebook Page</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6 class="font-semibold mb-4">Legal</h6>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="https://ac.wtec1.xyz/others/terms-of-service.html" class="hover:text-amber-400 transition">Terms of Service</a></li>
+                    <li><a href="https://blog.wtec1.xyz/wtec1-lms/" class="hover:text-amber-400 transition">Privacy Policy</a></li>
+                    <li><a href="https://ac.wtec1.xyz/others/refund.html" class="hover:text-amber-400 transition">Refund Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-700/50 text-center text-slate-500 text-sm">
+        <p>© EduVault. All rights reserved.</p>
+        <p class="mt-2">Product of <span class="text-amber-400 font-semibold">WTEC1 Technologies</span></p>
+        </div>
+
+    </footer>
+</body>
+</html>

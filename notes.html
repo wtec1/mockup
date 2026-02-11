@@ -9,7 +9,7 @@
   <title>Study Notes</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="icon" type="image/png" href="/img/WTEC1_LMS_512x512.png">
+  <!-- <link rel="icon" type="image/png" href="/img/WTEC1_LMS_512x512.png"> -->
 </head>
 <body class="bg-gray-100">
 
@@ -54,58 +54,61 @@
   </div>
 
 <script>
-const API = "https://study.wtec1.com/api/notes";
+const API_KEY = "PAI-KEY-INSERT";
+const API = "http://localhost:3000/api/notes";
 let searchQuery = "";
 
 async function loadNotes(page = 1) {
-  const url = searchQuery
-    ? `${API}?page=${page}&search=${encodeURIComponent(searchQuery)}`
-    : `${API}?page=${page}`;
+  try {
+    const url = searchQuery
+      ? `${API}?page=${page}&search=${encodeURIComponent(searchQuery)}`
+      : `${API}?page=${page}`;
 
-  const res = await fetch(url);
-  const data = await res.json();
+    const res = await fetch(url, {
+      headers: {
+        "x-api-key": API_KEY
+      }
+    });
 
-  renderNotes(data.notes || []);
-  renderPagination(data.totalPages || 1, page);
+    if (!res.ok) throw new Error("Failed to fetch notes");
+
+    const data = await res.json();
+
+   const notes = Array.isArray(data) ? data : data.notes || [];
+renderNotes(notes);
+
+    renderPagination(data.totalPages || 1, page);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("notes").innerHTML =
+      `<p class="text-red-500 text-center">Error loading notes</p>`;
+  }
 }
-
-window.searchNotes = function (e) {
-  e.preventDefault();
-  const input = document.getElementById("searchInput");
-  if (!input) return;
-
-  searchQuery = input.value.trim();
-  loadNotes(1);
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadNotes();
-});
-
 
 function renderNotes(notes) {
   const box = document.getElementById("notes");
+  if (!box) return;
+
   box.innerHTML = "";
 
   if (!notes.length) {
     box.innerHTML =
-      `<p class="col-span-full text-center text-gray-500">
-        No notes found
-       </p>`;
+      `<p class="text-center text-gray-500">No notes found</p>`;
     return;
   }
 
- notes.forEach(n => {
-  const action =
-    n.access_type === "free"
-      ? `<a href="https://study.wtec1.com/view/${n.id}" target="_blank"
-           class="text-green-600 font-semibold block mb-1">
-           Open PDF
-         </a>`
-      : `<a href="https://study.wtec1.com/pay-wait/${n.id}"
-           class="text-red-600 font-semibold block mb-1">
-           Buy & Open (MK700)
-         </a>`;
+  notes.forEach(n => {
+    const action =
+      n.access_type === "free"
+        ? `<a href="http://localhost:3000/view/${n.id}" target="_blank"
+             class="text-green-600 font-semibold block mb-1">
+             Open PDF
+           </a>`
+        : `<a href="http://localhost:3000/view/${n.id}"
+             class="text-blue-600 font-semibold block mb-1">
+             Open (Free)
+           </a>`;
 
     box.innerHTML += `
       <div class="bg-white p-5 rounded-xl shadow">
@@ -125,20 +128,16 @@ function renderNotes(notes) {
 
 function renderPagination(total, current) {
   const p = document.getElementById("pagination");
-  p.innerHTML = "";
+  if (!p) return;
 
+  p.innerHTML = "";
   if (total <= 1) return;
 
-  const windowSize = 3;
-
-  let start = Math.max(1, current - 1);
-  let end = Math.min(total, start + windowSize - 1);
-
-  for (let i = start; i <= end; i++) {
+  for (let i = 1; i <= total; i++) {
     const btn = document.createElement("button");
     btn.textContent = i;
     btn.className =
-      "px-4 py-2 rounded " +
+      "px-4 py-2 rounded mx-1 " +
       (i === current ? "bg-black text-white" : "bg-white border");
 
     btn.onclick = () => loadNotes(i);
@@ -146,39 +145,25 @@ function renderPagination(total, current) {
   }
 }
 
-document
-  .getElementById("searchInput")
-  ?.addEventListener("keydown", e => {
-    if (e.key === "Enter") searchNotes();
-  });
+function searchNotes(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+
+  searchQuery = input.value.trim();
+  loadNotes(1);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadNotes();
+
+  document
+    .getElementById("searchInput")
+    ?.addEventListener("keydown", e => {
+      if (e.key === "Enter") searchNotes();
+    });
 });
-
-function makePayment() {
-  PaychanguCheckout({
-    public_key: PAYCHANGU_PUBLIC_KEY,
-    tx_ref: PAYMENT_REF,
-    amount: 100,
-    currency: "MWK",
-
-    callback_url: "https://study.wtec1.com/api/pay/callback",
-
-    customer: {
-      email: "customer@example.com"
-    },
-    customization: {
-      title: "Book Purchase",
-      description: "Premium PDF"
-    }
-  });
-
-  startChecking();
-}
-
 </script>
-
 
 <!-- Footer -->
     <footer class="relative bg-gray-150 z-10 border-slate-700/50 py-12 px-8 mt-4">
